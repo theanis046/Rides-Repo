@@ -13,6 +13,11 @@
     "dev": "nodemon",
     "coverage": "nyc --reporter=lcov --reporter=text mocha tests"
   },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run test"
+    }
+  },
   "keywords": [
     "Xendit"
   ],
@@ -29,6 +34,7 @@
     "chai": "^4.2.0",
     "concurrently": "^5.3.0",
     "eslint": "^7.9.0",
+    "husky": "^4.3.0",
     "mocha": "^6.1.4",
     "nodemon": "^2.0.4",
     "sinon": "^9.0.3",
