@@ -1,0 +1,177 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Rides API Documentation",
+    "description": "Rides API documentation on Open API Specification",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "host": "localhost:8010",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Rides",
+      "description": "API for Rides in the system"
+    }
+  ],
+  "schemes": ["http"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/rides": {
+      "get": {
+        "tags": ["Rides"],
+        "summary": "Get all rides in system",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Rides"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequest"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Rides"],
+        "summary": "Insert Rides Dummy Data",
+        "parameters":[
+          {
+             "in":"body",
+             "name":"body",
+             "description":"Insert Dummy Rides",
+             "required":true,
+             "schema":{
+                "$ref":"#/definitions/RidesRequest"
+             }
+          }
+       ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Rides"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequest"
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["Health Status"],
+        "summary": "HealthCheck",
+        "responses": {
+          "200": {
+            "description": "Healthy"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Ride": {
+      "properties": {
+        "rideID": {
+          "type": "integer",
+          "uniqueItems": true
+        },
+        "startLat": {
+          "type": "integer",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "startLong": {
+          "type": "integer",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "endLat": {
+          "type": "integer",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "endLong": {
+          "type": "integer",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "riderName": {
+          "type": "string"
+        },
+        "driverName": {
+          "type": "string"
+        },
+        "driverVehicle": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string"
+        }
+      }
+    },
+    "Rides": {
+      "type": "array",
+      "$ref": "#/definitions/Ride"
+    },
+    "BadRequest": {
+      "properties": {
+        "error_code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "RidesRequest": {
+      "properties": {
+        "start_lat": {
+          "type": "integer",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "start_long": {
+          "type": "integer",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "end_lat": {
+          "type": "integer",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "end_long": {
+          "type": "integer",
+          "minimum": -180,
+          "maximum": 180
+        },
+
+        "rider_name": {
+          "type": "string"
+        },
+
+        "driver_name": {
+          "type": "string"
+        },
+
+        "driver_vehicle": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
