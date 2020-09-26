@@ -21,6 +21,7 @@ module.exports = (db) => {
 		const driverVehicle = req.body.driver_vehicle;
 
 		if (startLatitude < -90 || startLatitude > 90 || startLongitude < -180 || startLongitude > 180) {
+			logger.info('Start latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively');
 			return res.status(400).send({
 				error_code: 'VALIDATION_ERROR',
 				message: 'Start latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively'
