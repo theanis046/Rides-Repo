@@ -1,0 +1,76 @@
+config:
+  target: "http://localhost:8010"
+  phases:
+    - duration: 30
+      arrivalRate: 100
+  ensure:
+    p99: 50
+  payload:
+    -
+      path: "artilleryPayload.csv"
+      fields:
+        - "start_lat"
+        - "start_long"
+        - "end_lat"
+        - "end_long"
+        - "rider_name"
+        - "driver_name"
+        - "driver_vehicle"
+      delimiter: ","
+    - 
+      path: "pagingPayload.csv"
+      fields:
+        - "pageNumber"
+        - "pageSize"
+      delimiter: ","         
+  
+scenarios:
+  - name: "Post Rides & Get"
+    flow:
+      - post:
+          url: "/rides"
+          json: 
+            start_lat: "{{ start_lat }}"
+            start_long: "{{ start_long }}"
+            end_lat: "{{ end_lat }}"
+            end_long: "{{ end_long }}"
+            rider_name: "{{ rider_name }}"
+            driver_name: "{{ driver_name }}"
+            driver_vehicle: "{{ driver_vehicle }}"
+          capture:
+            json: "$.results[0].rideID"
+            as: "id"
+      - get:
+          url: "/rides/{{ id }}"
+  - name: "Post Rides & Get All"
+    flow:
+      - post:
+          url: "/rides"
+          json: 
+            start_lat: "{{ start_lat }}"
+            start_long: "{{ start_long }}"
+            end_lat: "{{ end_lat }}"
+            end_long: "{{ end_long }}"
+            rider_name: "{{ rider_name }}"
+            driver_name: "{{ driver_name }}"
+            driver_vehicle: "{{ driver_vehicle }}"
+      - get:
+          url: "/rides"
+
+  - name: "Post Rides & Get Rides Paging"
+    flow:
+      - post:
+          url: "/rides"
+          json: 
+            start_lat: "{{ start_lat }}"
+            start_long: "{{ start_long }}"
+            end_lat: "{{ end_lat }}"
+            end_long: "{{ end_long }}"
+            rider_name: "{{ rider_name }}"
+            driver_name: "{{ driver_name }}"
+            driver_vehicle: "{{ driver_vehicle }}"
+      - get:
+          url: "/rides"
+          qs:
+            pageNumber: "{{ pageNumber }}"
+            pageSize: "{{ pageSize }}"
