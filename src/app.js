@@ -80,7 +80,9 @@ module.exports = (db) => {
 	});
 
 	app.get('/rides', (req, res) => {
-		db.all('SELECT * FROM Rides', function (err, rows) {
+		let query = getRidesSQLQuery(req, res);
+		db.all(query, function (err, rows) {
+            
 			if (err) {
 				return res.status(400).send({
 					error_code: 'SERVER_ERROR',
@@ -98,6 +100,35 @@ module.exports = (db) => {
 			res.send(rows);
 		});
 	});
+    
+	function getRidesSQLQuery(req,res) {
+		let pageNumber, pageSize;
+		let sqlStatement;
+		if (req.query) {
+			pageNumber = req.query.pageNumber;
+			pageSize = req.query.pageSize;
+		}
+
+		if (pageNumber && pageSize) {
+			pageNumber = parseInt(pageNumber)
+			pageSize = parseInt(pageSize)
+            
+			if (Number.isNaN(pageNumber)|| Number.isNaN(pageSize)) {
+				return res.status(400).send({
+					error_code: 'VALIDATION_ERROR',
+					message: 'Page Number and Page Size should be valid numbers'
+				})
+			}
+			
+			let offset = pageSize * (pageNumber - 1)
+			sqlStatement = `SELECT * FROM Rides LIMIT ${pageSize} OFFSET ${offset}`
+		}
+		else {
+			sqlStatement = 'SELECT * FROM Rides'
+		}
+
+		return sqlStatement;
+	}
 
 	app.get('/rides/:id', (req, res) => {
 		db.all(`SELECT * FROM Rides WHERE rideID='${req.params.id}'`, function (err, rows) {

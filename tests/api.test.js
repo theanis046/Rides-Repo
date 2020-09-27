@@ -13,7 +13,7 @@ const buildSchemas = require('../src/schemas');
 
 describe('API tests', () => {
 	before((done) => {
-		db.serialize((err) => { 
+		db.serialize((err) => {
 			if (err) {
 				return done(err);
 			}
@@ -23,13 +23,13 @@ describe('API tests', () => {
 			done();
 		});
 	});
-    
+
 	afterEach(() => {
 		if (db.all.restore) {
 			db.all.restore();
 		}
 	});
-    
+
 	describe('GET /health', () => {
 		it('should return health', (done) => {
 			request(app)
@@ -38,7 +38,7 @@ describe('API tests', () => {
 				.expect(200, done);
 		});
 	});
-    
+
 	describe('GET /rides', () => {
 		it('Incase of no rides, API should return 400', (done) => {
 			request(app)
@@ -46,10 +46,10 @@ describe('API tests', () => {
 				.expect(400, done);
 		});
 	});
-    
+
 	it('Error object should be returned in case of unhandled Error', (done) => {
 		sinon.stub(db, 'all').yieldsRight(new Error('Unhandled Error'));
-    
+
 		request(app)
 			.get('/rides')
 			.then((response) => {
@@ -60,13 +60,13 @@ describe('API tests', () => {
 				done();
 			});
 	});
-    
+
 	it('empty rides should return RIDES_NOT_FOUND_ERROR', (done) => {
 		sinon.stub(db, 'all').yieldsRight(null, []);
-    
+
 		request(app)
 			.get('/rides')
-			
+
 			.expect(400)
 			.then((response) => {
 				expect(Object.keys(response.body).length).to.be.equal(2);
@@ -77,10 +77,10 @@ describe('API tests', () => {
 				done();
 			});
 	});
-    
+
 	it('Ride should return valid result for valid ride', (done) => {
 		const mockData = [];
-    
+
 		for (let i = 0; i < 2; i += 1) {
 			mockData.push({
 				rideId: i,
@@ -94,21 +94,21 @@ describe('API tests', () => {
 				created: Date(),
 			});
 		}
-    
+
 		sinon.stub(db, 'all').yieldsRight(null, mockData);
-    
+
 		request(app)
 			.get('/rides')
 			.expect('Content-Type', /json/)
 			.expect(200)
 			.then((response) => {
 				expect(response.body.length).to.be.equal(mockData.length);
-    
+
 				for (let i = 0; i < response.body.length; i += 1) {
 					const {
 						rideId, startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle,
 					} = response.body[i];
-    
+
 					expect(rideId).to.equal(mockData[i].rideId);
 					expect(startLat).to.equal(mockData[i].startLat);
 					expect(startLong).to.equal(mockData[i].startLong);
@@ -118,11 +118,36 @@ describe('API tests', () => {
 					expect(driverName).to.equal(mockData[i].driverName);
 					expect(driverVehicle).to.equal(mockData[i].driverVehicle);
 				}
-    
+
 				done();
 			});
 	});
-    
+
+	it('API should return VALIDATION_ERROR for invalid page Number', (done) => {
+
+		sinon.stub(db, 'all').yieldsRight(null, []);
+
+		let pageNumber = 'a';
+		let pageSize = 'b';
+
+		request(app)
+			.get('/rides')
+			.query({ pageNumber: pageNumber })
+			.query({ pageSize: pageSize })
+			.expect('Content-Type', /json/)
+			.expect(400)
+			.then((response) => {
+				expect(Object.keys(response.body).length).to.be.equal(2);
+				expect(response.body).to.have.property('error_code');
+				expect(response.body).to.have.property('message');
+				expect(response.body.error_code).to.equal('VALIDATION_ERROR');
+				expect(response.body.message).to.equal('Page Number and Page Size should be valid numbers');
+
+				done();
+			});
+	});
+
+
 	describe('GET /rides/:id', () => {
 		it('Invalid rideId should return error object', (done) => {
 			let rideId = 999
@@ -130,7 +155,7 @@ describe('API tests', () => {
 				.get(`/rides/${rideId}`)
 				.expect(400, done);
 		});
-    
+
 		it('If unhanlded Error occurs then system should return SERVER_ERROR', (done) => {
 			sinon.stub(db, 'all').yieldsRight(new Error('Unhandled Error'));
 			let rideId = 999;
@@ -144,17 +169,17 @@ describe('API tests', () => {
 					done();
 				});
 		});
-    
-		
+
+
 	});
-    
+
 	describe('POST /rides', () => {
 		it('Endpoint should be available', (done) => {
 			request(app)
 				.post('/rides')
 				.expect(400, done);
 		});
-      
+
 		it('Invalid start latitude should return VALIDATION_ERROR', (done) => {
 			let latitude = 100;
 			request(app)
@@ -167,7 +192,7 @@ describe('API tests', () => {
 					done();
 				});
 		});
-        
+
 		it('Invalid start longitude should return VALIDATION_ERROR', (done) => {
 			let startLongitude = 200;
 			request(app)
@@ -180,7 +205,7 @@ describe('API tests', () => {
 					done();
 				});
 		});
-        
+
 		it('Invalid end latitude should return VALIDATION_ERROR', (done) => {
 			let endlatitude = 100;
 			request(app)
@@ -193,7 +218,7 @@ describe('API tests', () => {
 					done();
 				});
 		});
-        
+
 		it('Invalid end longitude should return VALIDATION_ERROR', (done) => {
 			let endLongitude = 200;
 			request(app)
@@ -206,7 +231,7 @@ describe('API tests', () => {
 					done();
 				});
 		});
-        
+
 		it('Empty rider name should return VALIDATION_ERROR', (done) => {
 			let rideObjct = {
 				start_lat: 10,
@@ -225,7 +250,7 @@ describe('API tests', () => {
 					done();
 				});
 		});
-        
+
 		it('Empty driver name should return VALIDATION_ERROR', (done) => {
 			let rideObjct = {
 				start_lat: 10,
@@ -245,7 +270,7 @@ describe('API tests', () => {
 					done();
 				});
 		});
-        
+
 		it('Empty driverVehicle name should return VALIDATION_ERROR', (done) => {
 			let rideObjct = {
 				start_lat: 10,
@@ -266,7 +291,7 @@ describe('API tests', () => {
 					done();
 				});
 		});
-        
+
 		it('Valid Ride Object should return success response', (done) => {
 			let rideObjct = {
 				start_lat: 10,
