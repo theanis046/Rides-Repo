@@ -13,6 +13,7 @@ const swaggerUi = require('swagger-ui-express'),
 const {db} =  require('./src/services/baseRepo')
 const buildSchemas = require('./src/schemas');
 const cluster = require('cluster');
+const logger = require('./src/utilities/logger')
 
 
 if (cluster.isMaster) {
@@ -26,8 +27,6 @@ if (cluster.isMaster) {
     
 		const app = require('./src/app')();
 		app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
-		app.listen(port, () => console.log(`App started and listening on port ${port}`));
+		app.listen(port, () => logger.info(`App started and listening on port ${port}`));
 	});
 }
-
-
