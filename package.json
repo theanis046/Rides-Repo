@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "concurrently 'mocha tests' 'npm run eslint'",
+    "test": "concurrently 'mocha tests' 'npm run eslint' 'npm run coverage'",
     "load:test": "concurrently 'npm start' 'artillery run artillery.yml'",
     "eslint": "eslint .",
     "start": "node index.js",
@@ -41,6 +41,7 @@
     "mocha": "^6.1.4",
     "nodemon": "^2.0.4",
     "sinon": "^9.0.3",
-    "supertest": "^4.0.2"
+    "supertest": "^4.0.2",
+    "nyc": "^14.1.1"
   }
 }
