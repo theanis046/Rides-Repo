@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "concurrently 'mocha tests' 'npm run eslint' 'npm run coverage'",
+    "load:test": "concurrently 'npm start' 'artillery run artillery.yml'",
     "eslint": "eslint .",
     "start": "node index.js",
     "dev": "nodemon",
@@ -31,7 +32,9 @@
     "winston": "^3.3.3"
   },
   "devDependencies": {
+    "artillery": "^1.6.1",
     "chai": "^4.2.0",
+    "cluster": "^0.7.7",
     "concurrently": "^5.3.0",
     "eslint": "^7.9.0",
     "husky": "^4.3.0",
