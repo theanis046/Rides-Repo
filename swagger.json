@@ -24,6 +24,19 @@
     "/rides": {
       "get": {
         "tags": ["Rides"],
+        "parameters":[
+          {
+            "in":"path",
+            "name":"pageNumber",
+            "description":"Page number"
+         },
+         {
+          "in":"path",
+          "name":"pageSize",
+          "description":"Page Size"
+       }
+       
+       ],
         "summary": "Get all rides in system",
         "responses": {
           "200": {
