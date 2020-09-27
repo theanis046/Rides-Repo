@@ -2,31 +2,37 @@
 
 const request = require('supertest');
 
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database(':memory:');
 
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const app = require('../src/app')(db);
+
 const buildSchemas = require('../src/schemas');
+const db = require('../src/services/baseRepo');
+let app;
 
 describe('API tests', () => {
+	let dbAllAsyncMock;
+
 	before((done) => {
-		db.serialize((err) => {
+		db.db.serialize((err) => {
 			if (err) {
 				return done(err);
 			}
 
-			buildSchemas(db);
+			buildSchemas(db.db);
 
-			done();
+			return done();
 		});
+
+		dbAllAsyncMock = sinon.stub(db, 'dbAllAsync');
+		app = require('../src/app')();
 	});
 
+
 	afterEach(() => {
-		if (db.all.restore) {
-			db.all.restore();
+		if (db.dbAllAsync.restore) {
+			db.dbAllAsync.restore();
 		}
 	});
 
@@ -38,17 +44,15 @@ describe('API tests', () => {
 				.expect(200, done);
 		});
 	});
-
-	describe('GET /rides', () => {
-		it('Incase of no rides, API should return 400', (done) => {
-			request(app)
-				.get('/rides')
-				.expect(400, done);
-		});
+    
+	it('Incase of no rides, API should return 400', (done) => {
+		request(app)
+			.get('/rides')
+			.expect(400, done);
 	});
 
 	it('Error object should be returned in case of unhandled Error', (done) => {
-		sinon.stub(db, 'all').yieldsRight(new Error('Unhandled Error'));
+		dbAllAsyncMock.rejects(new Error('UNHANDLED_ERROR'));
 
 		request(app)
 			.get('/rides')
@@ -62,11 +66,10 @@ describe('API tests', () => {
 	});
 
 	it('empty rides should return RIDES_NOT_FOUND_ERROR', (done) => {
-		sinon.stub(db, 'all').yieldsRight(null, []);
+		dbAllAsyncMock.resolves([]);
 
 		request(app)
 			.get('/rides')
-
 			.expect(400)
 			.then((response) => {
 				expect(Object.keys(response.body).length).to.be.equal(2);
@@ -95,7 +98,7 @@ describe('API tests', () => {
 			});
 		}
 
-		sinon.stub(db, 'all').yieldsRight(null, mockData);
+		dbAllAsyncMock.resolves(mockData);
 
 		request(app)
 			.get('/rides')
@@ -124,9 +127,8 @@ describe('API tests', () => {
 	});
 
 	it('API should return VALIDATION_ERROR for invalid page Number', (done) => {
-
-		sinon.stub(db, 'all').yieldsRight(null, []);
-
+        
+		dbAllAsyncMock.resolves([]);
 		let pageNumber = 'a';
 		let pageSize = 'b';
 
@@ -146,32 +148,27 @@ describe('API tests', () => {
 				done();
 			});
 	});
-
-
-	describe('GET /rides/:id', () => {
-		it('Invalid rideId should return error object', (done) => {
-			let rideId = 999
-			request(app)
-				.get(`/rides/${rideId}`)
-				.expect(400, done);
-		});
-
-		it('If unhanlded Error occurs then system should return SERVER_ERROR', (done) => {
-			sinon.stub(db, 'all').yieldsRight(new Error('Unhandled Error'));
-			let rideId = 999;
-			request(app)
-				.get(`/rides/${rideId}`)
-				.expect(400)
-				.then((response) => {
-					expect(Object.keys(response.body).length).to.be.equal(2);
-					expect(response.body.error_code).to.equal('SERVER_ERROR');
-					expect(response.body.message).to.equal('Unknown error');
-					done();
-				});
-		});
-
-
+	it('Invalid rideId should return error object', (done) => {
+		let rideId = 999
+		request(app)
+			.get(`/rides/${rideId}`)
+			.expect(400, done);
 	});
+
+	it('If unhanlded Error occurs then system should return SERVER_ERROR', (done) => {
+		dbAllAsyncMock.rejects(new Error('UNHANDLED_ERROR'));
+		let rideId = 999;
+		request(app)
+			.get(`/rides/${rideId}`)
+			.expect(400)
+			.then((response) => {
+				expect(Object.keys(response.body).length).to.be.equal(2);
+				expect(response.body.error_code).to.equal('SERVER_ERROR');
+				expect(response.body.message).to.equal('Unknown error');
+				done();
+			});
+	});
+
 
 	describe('POST /rides', () => {
 		it('Endpoint should be available', (done) => {
@@ -266,7 +263,7 @@ describe('API tests', () => {
 				.expect(400)
 				.then((response) => {
 					expect(response.body.error_code).to.equal('VALIDATION_ERROR');
-					expect(response.body.message).to.equal('Rider name must be a non empty string');
+					expect(response.body.message).to.equal('Driver name must be a non empty string');
 					done();
 				});
 		});
@@ -287,7 +284,7 @@ describe('API tests', () => {
 				.expect(400)
 				.then((response) => {
 					expect(response.body.error_code).to.equal('VALIDATION_ERROR');
-					expect(response.body.message).to.equal('Rider name must be a non empty string');
+					expect(response.body.message).to.equal('Vehicle type must be a non empty string');
 					done();
 				});
 		});
@@ -302,6 +299,7 @@ describe('API tests', () => {
 				driver_name: 'driver',
 				driver_vehicle: 'vehicle'
 			}
+			dbAllAsyncMock.resolves([rideObjct]);
 			request(app)
 				.post('/rides')
 				.send(rideObjct)
