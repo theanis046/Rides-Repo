@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "concurrently 'mocha tests' 'npm run eslint' 'npm run coverage'",
+    "test": "concurrently 'mocha tests' 'npm run eslint'",
     "load:test": "concurrently 'npm start' 'artillery run artillery.yml'",
     "eslint": "eslint .",
     "start": "node index.js",
